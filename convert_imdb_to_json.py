@@ -111,7 +111,6 @@ if len(sys.argv) < 2:
     print ("Must provide title for movie / episide (e.g. 'tt0117731')")
     sys.exit()
 title = sys.argv[1]
-title = "tt0117731"
 
 for type in ['goofs','quotes','trivia','crazycredits']:
 
