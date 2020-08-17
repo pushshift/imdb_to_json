@@ -60,8 +60,8 @@ def fullcredits(title='tt0187393'):
 
     return main_cast
 
-def fetch_section(title, section):
-
+def fetch_section(title='tt0117731', section='trivia'):
+    '''This method will fetch data for a particular section (trivia, goofs, quotes, etc.)'''
     r = requests.get(f"https://www.imdb.com/title/{title}/{section}")
     p = HTMLParser(r.content)
 
@@ -107,6 +107,10 @@ def fetch_section(title, section):
 
 
 output = {}
+if len(sys.argv) < 2:
+    print ("Must provide title for movie / episide (e.g. 'tt0117731')")
+    sys.exit()
+title = sys.argv[1]
 title = "tt0117731"
 
 for type in ['goofs','quotes','trivia','crazycredits']:
