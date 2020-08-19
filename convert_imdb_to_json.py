@@ -9,6 +9,17 @@ import re
 import logging
 logging.basicConfig(level=logging.INFO)
 
+def keywords(title='tt0187393'):
+    '''Get keywords data for title'''
+    r = requests.get(f"https://www.imdb.com/title/{title}/keywords")
+    p = HTMLParser(r.content)
+    keywords_data = p.css("div.sodatext")
+    keywords = []
+    for keyword in keywords:
+        keywords.append(keyword.text().strip())
+
+    return keywords
+
 def reviews(title='tt0187393'):
     '''Get detailed review data for title'''
 
@@ -239,11 +250,13 @@ for type in ['goofs','quotes','trivia','crazycredits']:
     section = fetch_section(title, type)
     output[type] = section
 
-logging.info(f"Fetching full credits from IMDB.")
+logging.info("Fetching keywords for title from IMDB.")
+output['keywords'] = keywords(title=title)
+logging.info("Fetching full credits from IMDB.")
 output['credits'] = fullcredits(title=title)
-logging.info(f"Fetching extended ratings from IMDB.")
+logging.info("Fetching extended ratings from IMDB.")
 output['rating'] = ratings(title=title)
-logging.info(f"Fetching all available reviews from IMDB.")
+logging.info("Fetching all available reviews from IMDB.")
 output['reviews'] = reviews(title=title)
 
 # Dump data in json format
