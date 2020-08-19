@@ -6,6 +6,76 @@ from selectolax.parser import HTMLParser
 import sys
 import re
 
+def ratings(title='tt0187393'):
+    '''Get detailed ratings data for title'''
+    r = requests.get(f"https://www.imdb.com/title/{title}/ratings")
+    p = HTMLParser(r.content)
+    div = p.css_first("div.allText")
+    output = {}
+    fields = div.text().strip().split("\n")
+    num_votes = fields[0].replace(",","")
+    avg_rating = float(re.search(r"[\d,\.]+", fields[1])[0])
+    print(num_votes, avg_rating)
+    output['globalRating'] = {}
+    output['globalRating']['numVotes'] = num_votes
+    output['globalRating']['avgRating'] = avg_rating
+    tables = p.css("table")
+    fields = tables[0].text().strip().split("\n")
+
+    rating_fields = []
+    for f in fields:
+        f = f.strip()
+        if f != "":
+            rating_fields.append(f)
+
+    output['detailedRatings'] = []
+    rating_fields = rating_fields[2:]
+    for x in range(0,10):
+        obj = {}
+        rating = int(rating_fields[x*3])
+        num_votes = int(rating_fields[(x*3)+2].replace(",",""))
+        obj['rating'] = rating
+        obj['numVotes'] = num_votes
+        output['detailedRatings'].append(obj)
+
+    demographic_data = tables[1].text().strip().split("\n")
+
+    rating_fields = []
+    for f in demographic_data:
+        f = f.strip()
+        if f != "":
+            rating_fields.append(f)
+
+    output['demographicRatings'] = {}
+    output['demographicRatings']['all'] = {}
+    output['demographicRatings']['males'] = {}
+    output['demographicRatings']['females'] = {}
+    rf = rating_fields
+    for idx, f in enumerate(rf[0:5]):
+        output['demographicRatings']['all'][f] = {'rating':float(rf[(idx*2)+6]),'numVotes':int(rf[(idx*2)+7].replace(",",""))}
+        output['demographicRatings']['males'][f] = {'rating':float(rf[(idx*2)+17]),'numVotes':int(rf[(idx*2)+18].replace(",",""))}
+        output['demographicRatings']['females'][f] = {'rating':float(rf[(idx*2)+28]),'numVotes':int(rf[(idx*2)+29].replace(",",""))}
+
+    output['geographicRatings'] = {}
+    output['geographicRatings']['US'] = {}
+    output['geographicRatings']['nonUS'] = {}
+    output['geographicRatings']['top1000Users'] = {}
+
+    geographic_data = tables[2].text().strip().split("\n")
+
+    rf = []
+    for f in geographic_data:
+        f = f.strip()
+        if f != "":
+            rf.append(f)
+
+    output['geographicRatings']['top1000Users'] = {'rating':float(rf[3]),'numVotes':int(rf[4].replace(",",""))}
+    output['geographicRatings']['US'] = {'rating':float(rf[5]),'numVotes':int(rf[6].replace(",",""))}
+    output['geographicRatings']['nonUS'] = {'rating':float(rf[7]),'numVotes':int(rf[8].replace(",",""))}
+
+    return output
+
+
 def fullcredits(title='tt0187393'):
     '''Get full credits (cast) for title'''
     r = requests.get(f"https://www.imdb.com/title/{title}/fullcredits")
@@ -118,7 +188,7 @@ for type in ['goofs','quotes','trivia','crazycredits']:
     output[type] = section
 
 output['credits'] = fullcredits(title=title)
-
+output['rating'] = ratings(title=title)
 # Dump data in json format
 print(json.dumps(output, ensure_ascii=False, escape_forward_slashes=False))
 
