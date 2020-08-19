@@ -57,7 +57,7 @@ def ratings(title='tt0187393'):
 
     output['geographicRatings'] = {}
     output['geographicRatings']['US'] = {}
-    output['geographicRatings']['nonUS'] = {}
+    output['geographicRatings']['non-US'] = {}
     output['geographicRatings']['top1000Users'] = {}
 
     geographic_data = tables[2].text().strip().split("\n")
@@ -70,7 +70,7 @@ def ratings(title='tt0187393'):
 
     output['geographicRatings']['top1000Users'] = {'rating':float(rf[3]),'numVotes':int(rf[4].replace(",",""))}
     output['geographicRatings']['US'] = {'rating':float(rf[5]),'numVotes':int(rf[6].replace(",",""))}
-    output['geographicRatings']['nonUS'] = {'rating':float(rf[7]),'numVotes':int(rf[8].replace(",",""))}
+    output['geographicRatings']['non-US'] = {'rating':float(rf[7]),'numVotes':int(rf[8].replace(",",""))}
 
     return output
 
