@@ -9,6 +9,25 @@ import re
 import logging
 logging.basicConfig(level=logging.INFO)
 
+def plotsummary(title='tt0187393'):
+    '''Get Plot Summaries for Title'''
+    r = requests.get(f"https://www.imdb.com/title/{title}/plotsummary")
+    p = HTMLParser(r.content)
+    summaries = []
+    summaries_data = p.css("li.ipl-zebra-list__item")
+    if summaries_data is not None:
+        for summary in summaries_data:
+            obj = {}
+            obj['author'] = None
+            author_data = summary.css_first("div.author-container")
+            if author_data is not None:
+                obj['author'] = author_data.text().strip()
+            summary.strip_tags(["div.author-container"])
+            obj['summary'] = summary.text().strip()
+            summaries.append(obj)
+
+    return summaries
+
 def keywords(title='tt0187393'):
     '''Get keywords data for title'''
     r = requests.get(f"https://www.imdb.com/title/{title}/keywords")
@@ -253,6 +272,8 @@ for type in ['goofs','quotes','trivia','crazycredits']:
 
 logging.info("Fetching keywords for title from IMDB.")
 output['keywords'] = keywords(title=title)
+logging.info("Fetching plot summaries for title from IMDB.")
+output['summaries'] = plotsummary(title=title)
 logging.info("Fetching full credits from IMDB.")
 output['credits'] = fullcredits(title=title)
 logging.info("Fetching extended ratings from IMDB.")
