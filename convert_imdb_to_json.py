@@ -35,7 +35,7 @@ def keywords(title='tt0187393'):
     keywords_data = p.css("div.sodatext")
     keywords = []
     if keywords_data is not None:
-        for keyword in keywords:
+        for keyword in keywords_data:
             keywords.append(keyword.text().strip())
 
     return keywords
