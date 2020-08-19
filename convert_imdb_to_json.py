@@ -3,8 +3,60 @@
 import ujson as json
 import requests
 from selectolax.parser import HTMLParser
+from datetime import datetime
 import sys
 import re
+import logging
+logging.basicConfig(level=logging.INFO)
+
+def reviews(title='tt0187393'):
+    '''Get detailed review data for title'''
+
+    def process_reviews(html):
+        p = HTMLParser(html)
+        div = p.css_first("div.lister-list")
+        div = div.css("div.lister-item")
+
+        for item in div:
+            review = {}
+            rating_section = item.css_first("div.ipl-ratings-bar")
+            if rating_section is not None:
+                review['rating'] = int(rating_section.text().strip().split("/")[0])
+
+            author = item.css_first("span.display-name-link")
+            review['author'] = {}
+            review['author']['name'] = author.text().strip()
+            link = author.css_first("a")
+            review['author']['id'] = link.attrs['href'].strip()
+            review['date'] = item.css_first("span.review-date").text().strip()
+            review['epoch_date'] = int(datetime.strptime(review['date'], '%d %B %Y').timestamp())
+            content_div = item.css_first("div.text")
+            content = content_div.text().strip()
+            review['content'] = content
+            stats = item.css_first("div.actions").text().strip()
+            nums = re.findall(r'[0-9,]+',stats)
+            review['review_was_helpful'] = {'helpfulCount':int(nums[0].replace(",","")), 'totalCount': int(nums[1].replace(",",""))}
+            reviews.append(review)
+        pagination = p.css_first("div.load-more-data")
+        pagination_key = None
+        if pagination is not None:
+            pagination_key = pagination.attrs['data-key'].strip()
+        return pagination_key
+
+    r = requests.get(f"https://www.imdb.com/title/{title}/reviews")
+    reviews = []
+
+    while True:
+        pagination_key = process_reviews(r.content)
+        if pagination_key is None:
+            break
+        logging.info(f"Getting more reviews using pagination key: {pagination_key}. Total reviews ingested: {len(reviews)}.")
+        params = {'paginationKey': pagination_key}
+        r = requests.get(f"https://www.imdb.com/title/{title}/reviews/_ajax", params=params)
+        process_reviews(r.content)
+
+    logging.info(f"Total reviews ingested: {len(reviews)}.")
+    return reviews
 
 def ratings(title='tt0187393'):
     '''Get detailed ratings data for title'''
@@ -183,11 +235,17 @@ title = sys.argv[1]
 
 for type in ['goofs','quotes','trivia','crazycredits']:
 
+    logging.info(f"Fetching {type} data from IMDB.")
     section = fetch_section(title, type)
     output[type] = section
 
+logging.info(f"Fetching full credits from IMDB.")
 output['credits'] = fullcredits(title=title)
+logging.info(f"Fetching extended ratings from IMDB.")
 output['rating'] = ratings(title=title)
+logging.info(f"Fetching all available reviews from IMDB.")
+output['reviews'] = reviews(title=title)
+
 # Dump data in json format
 print(json.dumps(output, ensure_ascii=False, escape_forward_slashes=False))
 
