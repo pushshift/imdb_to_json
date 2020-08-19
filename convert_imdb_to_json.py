@@ -15,8 +15,9 @@ def keywords(title='tt0187393'):
     p = HTMLParser(r.content)
     keywords_data = p.css("div.sodatext")
     keywords = []
-    for keyword in keywords:
-        keywords.append(keyword.text().strip())
+    if keywords_data is not None:
+        for keyword in keywords:
+            keywords.append(keyword.text().strip())
 
     return keywords
 
