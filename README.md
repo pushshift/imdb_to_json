@@ -10,5 +10,10 @@ Movie title codes and other metadata can be downloaded from here: https://datase
 
 This should get you started.
 
+2020-08-19: Added ratings metadata
 
 
+To do:
+
+Add full review data
+Add auxilary data
