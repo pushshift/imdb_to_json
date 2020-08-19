@@ -14,6 +14,8 @@ This should get you started.
 
 2020-08-19: Added reviews metadata
 
+2020-08-19: Added title keywords metada
+
 To do:
 
 Add additional logging
