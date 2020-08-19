@@ -15,7 +15,6 @@ def ratings(title='tt0187393'):
     fields = div.text().strip().split("\n")
     num_votes = fields[0].replace(",","")
     avg_rating = float(re.search(r"[\d,\.]+", fields[1])[0])
-    print(num_votes, avg_rating)
     output['globalRating'] = {}
     output['globalRating']['numVotes'] = num_votes
     output['globalRating']['avgRating'] = avg_rating
