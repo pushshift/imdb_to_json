@@ -12,8 +12,11 @@ This should get you started.
 
 2020-08-19: Added ratings metadata
 
+2020-08-19: Added reviews metadata
 
 To do:
 
-Add full review data
-Add auxilary data
+Add additional logging
+
+Add better error handling (for requests)
+
