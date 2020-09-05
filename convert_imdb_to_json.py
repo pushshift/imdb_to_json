@@ -166,6 +166,14 @@ def fullcredits(title='tt0187393'):
     headers = p.css("h4.dataHeaderWithBorder:not([id])")
 
     main_cast = []
+
+    # Check if movie or a series
+    cast_header = p.css_first("h4#cast")
+    cast_header_text = cast_header.text().strip()
+    show_type = "movie"
+    if cast_header_text.lower().startswith('series'):
+        show_type = "series"
+
     for idx, table in enumerate(tables):
         trs = table.css("tr")
         category = headers[idx].text().strip()
@@ -188,29 +196,60 @@ def fullcredits(title='tt0187393'):
     rows_even = cast_list.css("tr.even")
     rows = [val for pair in zip(rows_odd, rows_even) for val in pair] # Join rows by interleaving to maintain order
 
-    for row in rows:
-        actor = {}
-        actor['category'] = "Cast"
-        tds = row.css("td")
-        photo = tds[0].css_first("a")
-        name = photo.attrs['href']
-        img = photo.css_first("img")
-        actor['image_link'] = None
-        if 'loadlate' in img.attrs:
-            actor['image_link'] = img.attrs['loadlate']
+    if show_type == "movie":
+        for row in rows:
+            actor = {}
+            actor['category'] = "Cast"
+            tds = row.css("td")
+            actor['image_link'] = None
+            photo = tds[0].css_first("a")
+            if photo is not None:
+                img = photo.css_first("img")
+                if img is not None:
+                    if 'loadlate' in img.attrs:
+                        actor['image_link'] = img.attrs['loadlate']
 
-        a = tds[1].css_first("a")
-        actor['actor_id'] = a.attrs['href'].strip().rsplit("/",1)[0]
-        actor['actor_name'] = a.text().strip()
-        a = tds[3].css_first("a")
-        if a is not None:
-            actor['character_id'] = a.attrs['href'].strip().rsplit("?",1)[0]
-            actor['character_name'] = a.text().strip()
-        else:
-           actor['character_name'] = re.sub(' +', ' ', tds[3].text().strip().replace("\n",""))
-        main_cast.append(actor)
+            a = tds[1].css_first("a")
+            actor['actor_id'] = a.attrs['href'].strip().rsplit("/",1)[0]
+            actor['actor_name'] = a.text().strip()
+            a = tds[3].css_first("a")
+            if a is not None and a.attrs['href'] != "#":
+                actor['character_id'] = a.attrs['href'].strip().rsplit("?",1)[0]
+                actor['character_name'] = a.text().strip()
+            else:
+               actor['character_name'] = re.sub(' +', ' ', tds[3].text().strip().replace("\n",""))
+            main_cast.append(actor)
+
+    elif show_type == "series":
+        for row in rows:
+            actor = {}
+            actor['category'] = "Cast"
+            tds = row.css("td")
+            if len(tds) != 4:
+                continue
+            actor['image_link'] = None
+            photo = tds[0].css_first("a")
+            if photo is not None:
+                img = photo.css_first("img")
+                if img is not None:
+                    if 'loadlate' in img.attrs:
+                        actor['image_link'] = img.attrs['loadlate']
+
+
+
+            a = tds[1].css_first("a")
+            actor['actor_id'] = a.attrs['href'].strip().rsplit("/",1)[0]
+            actor['actor_name'] = a.text().strip()
+            a = tds[3].css_first("a")
+            if a is not None and a.attrs['href'] != "#":
+                actor['character_id'] = a.attrs['href'].strip().rsplit("?",1)[0]
+                actor['character_name'] = a.text().strip()
+            else:
+                actor['character_name'] = re.sub(' +', ' ', tds[3].text().strip().replace("\n",""))
+            main_cast.append(actor)
 
     return main_cast
+
 
 def fetch_section(title='tt0117731', section='trivia'):
     '''This method will fetch data for a particular section (trivia, goofs, quotes, etc.)'''
