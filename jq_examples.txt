@@ -1,7 +1,7 @@
 # jq is a powerful linux command line utility that helps to work with json / ndjson files
 
 # Use regex to parse movie titles and output the primary title name and rating
-jq 'select(.primaryTitle | test("star trek";"i")) | "\(.primaryTitle) \(.rating.globalRating.avgRating)"' movies.ndjson
+jq 'select(.primaryTitle | test("star trek";"i")) | "\(.primaryTitle) \(.rating.globalRating.avgRating)"' sample_data.ndjson
 
 # Output movies with an average rating of 9 or greater
-jq 'select(.rating.globalRating.avgRating >= 9) | "\(.titleType) \(.primaryTitle) \(.rating.globalRating.avgRating) \(.rating.globalRating.numVotes)"' movies.ndjson
+jq 'select(.rating.globalRating.avgRating >= 9) | "\(.titleType) \(.primaryTitle) \(.rating.globalRating.avgRating) \(.rating.globalRating.numVotes)"' sample_data.ndjson
